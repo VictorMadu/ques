@@ -1,18 +1,14 @@
 import 'dart:collection';
 import 'dart:math';
 
-typedef ObservableHandler = void Function(
-    ResultDescriptor resultDescriptor, QuestionDescriptor questionDescriptor);
+typedef ObservableCallback = void Function();
 
 class Quiz {
-  final _listeners = HashMap<Object, ObservableHandler>();
+  final _listeners = HashMap<Object, ObservableCallback>();
 
   late int _nextQuestionIdIndex = -1;
   late int _totalOfCorrect = -1;
   late List<int> _selectedQuestionIds = [];
-
-  late ResultDescriptor _resultDescriptor;
-  late QuestionDescriptor _questionDescriptor;
 
   Quiz() {
     _updateDescriptors();
@@ -50,9 +46,9 @@ class Quiz {
     _updateDescriptors();
   }
 
-  void observe(Object context, ObservableHandler handler) {
+  void observe(Object context, ObservableCallback handler) {
     _listeners.putIfAbsent(context, () => handler);
-    handler(resultDescriptor(), questionDescriptor());
+    handler();
   }
 
   void unObserve(Object context) {
@@ -62,9 +58,9 @@ class Quiz {
   void _updateDescriptors() {
     _resultDescriptor = ResultDescriptor(this);
     _questionDescriptor = QuestionDescriptor(this);
+    _answerDescriptor = AnswerDescriptor(this);
 
-    _listeners.forEach(
-        (_, handler) => handler(_resultDescriptor, _questionDescriptor));
+    _listeners.forEach((_, handler) => handler());
   }
 
   ResultDescriptor resultDescriptor() {
@@ -74,11 +70,19 @@ class Quiz {
   QuestionDescriptor questionDescriptor() {
     return _questionDescriptor;
   }
+
+  AnswerDescriptor answerDescriptor() {
+    return _answerDescriptor;
+  }
+
+  late ResultDescriptor _resultDescriptor;
+  late QuestionDescriptor _questionDescriptor;
+  late AnswerDescriptor _answerDescriptor;
 }
 
 class QuestionDescriptor {
-  late String question;
-  late List<String> options;
+  late final String question;
+  late final List<String> options;
 
   QuestionDescriptor(Quiz quiz) {
     var currentQuestionIndex = quiz._nextQuestionIdIndex;
@@ -110,6 +114,15 @@ class QuestionDescriptor {
 
   @override
   int get hashCode => Object.hash(question, options);
+}
+
+class AnswerDescriptor {
+  late final String answer;
+
+  AnswerDescriptor(Quiz quiz) {
+    answer = _store[quiz._selectedQuestionIds[quiz._nextQuestionIdIndex]]
+        ["correctAnswer"] as String;
+  }
 }
 
 class ResultDescriptor {

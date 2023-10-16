@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 class QuizBox extends StatelessWidget {
   final String question;
   final List<String> options;
-  final void Function(String answer) answerSelectedHandler;
+  final void Function(String answer) onAnswerSelected;
 
-  const QuizBox(this.question, this.options, this.answerSelectedHandler,
-      {super.key});
+  const QuizBox(
+      {required this.question,
+      required this.options,
+      required this.onAnswerSelected,
+      super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +18,7 @@ class QuizBox extends StatelessWidget {
       child: Column(
         children: [
           _Question(question),
-          ...options.map((option) => _Option(option, answerSelectedHandler))
+          ...options.map((option) => _Option(option, onAnswerSelected))
         ],
       ),
     );

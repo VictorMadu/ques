@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 
 class ResultBox extends StatelessWidget {
   final String percentageScore;
-  final VoidCallback restartHandler;
+  final VoidCallback onRestartPressed;
 
-  const ResultBox(this.percentageScore, this.restartHandler, {super.key});
+  const ResultBox(
+      {required this.percentageScore,
+      required this.onRestartPressed,
+      super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,8 +21,7 @@ class ResultBox extends StatelessWidget {
         ),
         Center(
             child: ElevatedButton(
-                onPressed: () => restartHandler(),
-                child: const Text('Restart')))
+                onPressed: onRestartPressed, child: const Text('Restart')))
       ],
     );
   }

@@ -16,6 +16,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late Quiz quiz = Quiz();
+
   late ResultDescriptor resultDescriptor = quiz.resultDescriptor();
   late QuestionDescriptor questionDescriptor = quiz.questionDescriptor();
 
@@ -23,10 +24,10 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    quiz.observe(this, (rDescriptor, qDescriptor) {
+    quiz.observe(this, () {
       setState(() {
-        resultDescriptor = rDescriptor;
-        questionDescriptor = qDescriptor;
+        resultDescriptor = quiz.resultDescriptor();
+        questionDescriptor = quiz.questionDescriptor();
       });
     });
 
@@ -45,10 +46,15 @@ class _MyAppState extends State<MyApp> {
     Widget body;
 
     if (resultDescriptor.isQuizFinished) {
-      body = ResultBox(resultDescriptor.percentageScore, () => quiz.start(15));
+      body = ResultBox(
+          percentageScore: resultDescriptor.percentageScore,
+          onRestartPressed: () => quiz.start(15));
     } else {
-      body = QuizBox(questionDescriptor.question, questionDescriptor.options,
-          (String answer) => quiz.answerCurrentAndGoToNext(answer));
+      body = QuizBox(
+          question: questionDescriptor.question,
+          options: questionDescriptor.options,
+          onAnswerSelected: (String answer) =>
+              quiz.answerCurrentAndGoToNext(answer));
     }
 
     return MaterialApp(
