@@ -1,3 +1,6 @@
+import 'package:first_guide/domain/objects/quiz.dart';
+import 'package:first_guide/ui/quiz_box.dart';
+import 'package:first_guide/ui/result_box.dart';
 import 'package:flutter/material.dart';
 
 void main() => runApp(const MyApp());
@@ -7,52 +10,53 @@ class MyApp extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return MyAppState();
+    return _MyAppState();
   }
 }
 
-class MyAppState extends State<MyApp> {
-  var questionIndex = 0;
+class _MyAppState extends State<MyApp> {
+  late Quiz quiz = Quiz();
+  late ResultDescriptor resultDescriptor = quiz.resultDescriptor();
+  late QuestionDescriptor questionDescriptor = quiz.questionDescriptor();
 
-  var questions = [
-    "What's your favourite color?",
-    "What's your favourite animal?"
-  ];
+  @override
+  void initState() {
+    super.initState();
 
-  void answerQuestion() {
-    setState(() {
-      if (questionIndex < questions.length - 1) {
-        questionIndex = questionIndex + 1;
-      } else {
-        questionIndex = 0;
-      }
+    quiz.observe(this, (rDescriptor, qDescriptor) {
+      setState(() {
+        resultDescriptor = rDescriptor;
+        questionDescriptor = qDescriptor;
+      });
     });
+
+    quiz.start(15);
+  }
+
+  @override
+  void dispose() {
+    quiz.unObserve(this);
+
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    Widget body;
+
+    if (resultDescriptor.isQuizFinished) {
+      body = ResultBox(resultDescriptor.percentageScore, () => quiz.start(15));
+    } else {
+      body = QuizBox(questionDescriptor.question, questionDescriptor.options,
+          (String answer) => quiz.answerCurrentAndGoToNext(answer));
+    }
+
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('My First App'),
+          title: const Text('Quiz App'),
         ),
-        body: Column(
-          children: <Widget>[
-            Text(questions[questionIndex]),
-            ElevatedButton(
-              onPressed: answerQuestion,
-              child: const Text('Answer 1'),
-            ),
-            ElevatedButton(
-              onPressed: answerQuestion,
-              child: const Text('Answer 2'),
-            ),
-            ElevatedButton(
-              onPressed: answerQuestion,
-              child: const Text('Answer 3'),
-            ),
-          ],
-        ),
+        body: body,
       ),
     );
   }
